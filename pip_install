@@ -1,0 +1,12 @@
+#!/bin/sh
+
+echo "Downloading Ironic Master!"
+wget -N http://tarballs.openstack.org/ironic/ironic-master.tar.gz
+
+echo "Installing Ironic!!"
+pip install -U ironic-master.tar.gz
+
+echo "Installing everything else!"
+pip install -U $*
+
+exit $?

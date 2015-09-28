@@ -12,10 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import oslo_i18n
-import pbr.version
+"""
+test_cisco_ironic_contrib
+----------------------------------
 
-oslo_i18n.install('cisco_ironic_contrib')
+Tests for `cisco_ironic_contrib` module.
+"""
 
-__version__ = pbr.version.VersionInfo(
-    'cisco_ironic_contrib').version_string()
+from cisco_ironic_contrib.tests import base
+
+
+class TestCisco_ucs_ironic(base.TestCase):
+
+    def test_something(self):
+        pass

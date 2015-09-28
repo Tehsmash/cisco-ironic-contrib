@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
-import sys
+from ironic.drivers import pxe
 
-from ironic.drivers import fake
-from ironic.tests.drivers import third_party_driver_mocks  # noqa
+from cisco_ironic_contrib.ironic.cimc import boot as cimc_boot
+from cisco_ironic_contrib.ironic.cimc import vendor as cimc_vendor
 
-from cisco_ironic_contrib.ironic.cimc import boot
-from cisco_ironic_contrib.ironic.cimc import vendor
 
-if 'ironic.drivers.modules.cimc' in sys.modules:
-    six.moves.reload_module(
-        sys.modules['ironic.drivers.modules.cimc'])
+class PXEAndCIMCNeutronDriver(pxe.PXEAndCIMCDriver):
 
-fake.FakeCIMCDriver.boot = boot.PXEBoot()
-fake.FakeCIMCDriver.vendor = vendor.CIMCPXEVendorPassthru()
+    def __init__(self):
+        super(PXEAndCIMCNeutronDriver, self).__init__()
+        self.boot = cimc_boot.PXEBoot()
+        self.vendor = cimc_vendor.CIMCPXEVendorPassthru()
