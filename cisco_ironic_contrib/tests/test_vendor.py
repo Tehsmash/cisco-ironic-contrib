@@ -20,11 +20,9 @@ from ironic.common import exception
 from ironic.common import states
 from ironic.conductor import task_manager
 from ironic.conductor import utils as manager_utils
-from ironic.drivers.modules import iscsi_deploy
 from ironic import objects
-from ironic.tests.drivers.cimc import test_common
+from ironic.tests.unit.drivers.cimc import test_common
 
-from cisco_ironic_contrib.ironic.cimc import boot
 from cisco_ironic_contrib.ironic.cimc import common
 
 imcsdk = importutils.try_import('ImcSdk')
@@ -143,20 +141,3 @@ class CIMCPXEVendorPassthruTestCase(test_common.CIMCBaseTestCase):
             self.assertRaises(exception.NotFound,
                               task.driver.vendor.delete_vnic,
                               task, uuid="1")
-
-    @mock.patch.object(iscsi_deploy, 'validate_bootloader_install_status',
-                       autospec=True)
-    @mock.patch.object(iscsi_deploy, 'finish_deploy', autospec=True)
-    @mock.patch.object(boot.PXEBoot, 'clean_up_deploy', autospec=True)
-    def test_pass_bootloader_install_info(self, mock_clean, mock_finish,
-                                          mock_validate):
-        self.node.provision_state = states.DEPLOYWAIT
-        self.node.save()
-        with task_manager.acquire(self.context, self.node.uuid,
-                                  shared=False) as task:
-            task.driver.vendor.pass_bootloader_install_info(
-                task, address="1.2.3.4")
-
-            mock_clean.assert_called_once_with(mock.ANY, task)
-            mock_finish.assert_called_once_with(task, "1.2.3.4")
-            mock_validate.assert_called_once_with(task, {'address': '1.2.3.4'})

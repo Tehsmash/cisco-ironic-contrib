@@ -24,7 +24,7 @@ from ironic.dhcp import neutron
 from ironic.drivers.modules import deploy_utils
 from ironic.drivers.modules import pxe
 from ironic import objects
-from ironic.tests.drivers.cimc import test_common
+from ironic.tests.unit.drivers.cimc import test_common
 
 from cisco_ironic_contrib.ironic.cimc import boot
 from cisco_ironic_contrib.ironic.cimc import common
@@ -160,10 +160,19 @@ class PXEBootTestCase(test_common.CIMCBaseTestCase):
             mock_cache_ramdisk.assert_called_once_with(
                 task.context, task.node, mock_get_deploy.return_value)
 
-    @mock.patch.object(boot.PXEBoot, 'clean_up_ramdisk', autospec=True)
+    @mock.patch.object(pxe.PXEBoot, 'prepare_instance', autospec=True)
     @mock.patch.object(boot.PXEBoot, '_unplug_provisioning', autospec=True)
     @with_task
-    def test_clean_up_deploy(self, task, mock_unplug, mock_cleanup):
-        task.driver.boot.clean_up_deploy(task)
-        mock_cleanup.assert_called_once_with(mock.ANY, task)
+    def test_prepare_instance(self, task, mock_unplug, mock_prepare):
+        task.driver.boot.prepare_instance(task)
+        mock_prepare.assert_called_once_with(mock.ANY, task)
+        self.assertFalse(mock_unplug.called)
+
+    @mock.patch.object(pxe.PXEBoot, 'prepare_instance', autospec=True)
+    @mock.patch.object(boot.PXEBoot, '_unplug_provisioning', autospec=True)
+    @with_task
+    def test_prepare_instance_local(self, task, mock_unplug, mock_prepare):
+        task.node.instance_info['capabilities'] = {"boot_option": "local"}
+        task.driver.boot.prepare_instance(task)
+        mock_prepare.assert_called_once_with(mock.ANY, task)
         mock_unplug.assert_called_once_with(mock.ANY, task)

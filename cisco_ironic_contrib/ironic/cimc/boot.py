@@ -89,7 +89,6 @@ class PXEBoot(pxe.PXEBoot):
         pass
 
     def prepare_ramdisk(self, task, ramdisk_params):
-        LOG.debug("Prepare RAMDISK!")
         node = task.node
 
         # TODO(deva): optimize this if rerun on existing files
@@ -102,8 +101,7 @@ class PXEBoot(pxe.PXEBoot):
 
         self._plug_provisioning(task)
 
-        new_ports = objects.Port.list_by_node_id(task.context, node.id)
-        task.ports = new_ports
+        task.ports = objects.Port.list_by_node_id(task.context, node.id)
 
         pxe_info = pxe._get_deploy_image_info(node)
 
@@ -128,6 +126,7 @@ class PXEBoot(pxe.PXEBoot):
         # the image kernel and ramdisk (Or even require it).
         pxe._cache_ramdisk_kernel(task.context, node, pxe_info)
 
-    def clean_up_deploy(self, task):
-        self.clean_up_ramdisk(task)
-        self._unplug_provisioning(task)
+    def prepare_instance(self, task):
+        super(PXEBoot, self).prepare_instance(task)
+        if deploy_utils.get_boot_option(task.node) == "local":
+            self._unplug_provisioning(task)

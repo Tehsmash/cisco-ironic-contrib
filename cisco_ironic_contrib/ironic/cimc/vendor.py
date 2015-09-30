@@ -17,7 +17,6 @@ from oslo_log import log as logging
 from oslo_utils import importutils
 
 from ironic.common import exception
-from ironic.common.i18n import _LW
 from ironic.common import states
 from ironic.conductor import task_manager
 from ironic.conductor import utils as manager_utils
@@ -88,16 +87,3 @@ class CIMCPXEVendorPassthru(iscsi_deploy.VendorPassthru):
         common.delete_vnic(task, kwargs['uuid'])
         # Delete port from ironic port DB
         todelete.destroy()
-
-    @base.passthru(['POST'])
-    @task_manager.require_exclusive_lock
-    def pass_bootloader_install_info(self, task, **kwargs):
-        LOG.warning(_LW("The node %s is using the bash deploy ramdisk for "
-                        "its deployment. This deploy ramdisk has been "
-                        "deprecated. Please use the ironic-python-agent "
-                        "(IPA) ramdisk instead."), task.node.uuid)
-        task.process_event('resume')
-        LOG.debug('Continuing the deployment on node %s', task.node.uuid)
-        iscsi_deploy.validate_bootloader_install_status(task, kwargs)
-        task.driver.boot.clean_up_deploy(task)
-        iscsi_deploy.finish_deploy(task, kwargs['address'])
