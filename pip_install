@@ -12,6 +12,16 @@ else
     pip install ironic-master.tar.gz
 fi
 
+if $(python -c "import nova" 2> /dev/null); then
+    echo "Nova already installed."
+elif [ -x $ZUUL_CLONER ]; then
+    $ZUUL_CLONER --cache-dir /opt/git --workspace /tmp git://git.openstack.org openstack/nova
+    pip install /tmp/openstack/nova
+else
+    wget -N http://tarballs.openstack.org/nova/nova-master.tar.gz
+    pip install nova-master.tar.gz
+fi
+
 pip install -U $*
 
 exit $?

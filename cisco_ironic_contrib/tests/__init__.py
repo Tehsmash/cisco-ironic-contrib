@@ -1,29 +1,39 @@
-# Copyright 2015, Cisco Systems.
+# Copyright 2015 Cisco Systems
+# All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
 #
-#       http://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
-import six
-import sys
+# Ensure nova configs that conflict with ironic configs are unregistered for
+# the tests
 
-from ironic.drivers import fake
-from ironic.tests.unit.drivers import third_party_driver_mocks  # noqa
+from oslo_config import cfg
 
-from cisco_ironic_contrib.ironic.cimc import boot
-from cisco_ironic_contrib.ironic.cimc import vendor
+from nova.api import auth
+from nova import exception
+from nova import netconf
+from nova.network.neutronv2 import api
+from nova import paths
+from nova import utils
+from nova.virt import images
 
-if 'ironic.drivers.modules.cimc' in sys.modules:
-    six.moves.reload_module(
-        sys.modules['ironic.drivers.modules.cimc'])
+CONF = cfg.CONF
 
-fake.FakeCIMCDriver.boot = boot.PXEBoot()
-fake.FakeCIMCDriver.vendor = vendor.CIMCPXEVendorPassthru()
+CONF.unregister_opts(exception.exc_log_opts)
+CONF.unregister_opt(utils.utils_opts[3])
+CONF.unregister_opt(utils.utils_opts[4])
+CONF.unregister_opt(netconf.netconf_opts[0])
+CONF.unregister_opt(netconf.netconf_opts[2])
+CONF.unregister_opts(paths.path_opts)
+CONF.unregister_opt(auth.auth_opts[1])
+CONF.unregister_opts(api.neutron_opts, group='neutron')
+CONF.unregister_opts(images.image_opts)

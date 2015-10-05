@@ -13,12 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-A driver wrapping the Ironic API, such that Nova may provision
-bare metal resources.
-"""
-import time
-
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
@@ -36,7 +30,6 @@ class CiscoIronicDriver(ironic_driver.IronicDriver):
 
     def _check_for_vnic_creation(self, ironicclient, address):
         port = self.ironicclient.call("port.get_by_address", address)
-        print(port.__dict__)
         if port.extra['state'] == "UP":
             raise loopingcall.LoopingCallDone()
 
@@ -57,12 +50,6 @@ class CiscoIronicDriver(ironic_driver.IronicDriver):
             }
             self.ironicclient.call("node.vendor_passthru", node_uuid,
                                    "add_vnic", args=net_info)
-
-            LOG.debug('Sleeping for 120 seconds waiting for NIC to add',
-                      instance=instance)
-            time.sleep(120)
-            LOG.debug('Done sleeping...',
-                      instance=instance)
 
             timer = loopingcall.FixedIntervalLoopingCall(
                 self._check_for_vnic_creation,
