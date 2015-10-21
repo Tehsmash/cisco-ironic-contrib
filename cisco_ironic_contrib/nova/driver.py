@@ -28,11 +28,6 @@ CONF = cfg.CONF
 class CiscoIronicDriver(ironic_driver.IronicDriver):
     """Hypervisor driver for Ironic - bare metal provisioning."""
 
-    def _check_for_vnic_creation(self, ironicclient, address):
-        port = self.ironicclient.call("port.get_by_address", address)
-        if port.extra['state'] == "UP":
-            raise loopingcall.LoopingCallDone()
-
     def macs_for_instance(self, instance):
         return None
 
@@ -50,11 +45,6 @@ class CiscoIronicDriver(ironic_driver.IronicDriver):
             }
             self.ironicclient.call("node.vendor_passthru", node_uuid,
                                    "add_vnic", args=net_info)
-
-            timer = loopingcall.FixedIntervalLoopingCall(
-                self._check_for_vnic_creation,
-                self.ironicclient, vif['address'])
-            timer.start(interval=5).wait()
         LOG.debug('Plug VIFs successful for instance', instance=instance)
 
     def _unplug_vifs(self, node, instance, network_info):
